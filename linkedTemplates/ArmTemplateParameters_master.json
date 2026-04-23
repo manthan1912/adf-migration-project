@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "adf-for-basicprojects"
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_password": {
+            "value": ""
+        },
+        "LS_FOR_AZ_BLOB_connectionString": {
+            "value": ""
+        },
+        "LS_FOR_AZ_BLOB_EXCEL_connectionString": {
+            "value": ""
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_server": {
+            "value": "LAPTOP-1RR2JTHG"
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_database": {
+            "value": "AdventureWorksLT2025"
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_userName": {
+            "value": "admindata01"
+        },
+        "containerUri": {
+            "value": ""
+        },
+        "containerSasToken": {
+            "value": ""
+        }
+    }
+}

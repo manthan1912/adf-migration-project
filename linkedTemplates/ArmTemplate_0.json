@@ -1,0 +1,318 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "adf-for-basicprojects"
+        },
+        "LS_FOR_AZ_BLOB_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'LS_FOR_AZ_BLOB'"
+        },
+        "LS_FOR_AZ_BLOB_EXCEL_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'LS_FOR_AZ_BLOB_EXCEL'"
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_password": {
+            "type": "secureString",
+            "metadata": "Secure string for 'password' of 'LS_ONPREM_SQL_TO_BLOB_PARQ'"
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_server": {
+            "type": "string",
+            "defaultValue": "LAPTOP-1RR2JTHG"
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_database": {
+            "type": "string",
+            "defaultValue": "AdventureWorksLT2025"
+        },
+        "LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_userName": {
+            "type": "string",
+            "defaultValue": "admindata01"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/LS_FOR_AZ_BLOB')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "Linked Service for Azure Blob sotrage",
+                "annotations": [],
+                "type": "AzureBlobStorage",
+                "typeProperties": {
+                    "connectionString": "[parameters('LS_FOR_AZ_BLOB_connectionString')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/LS_FOR_AZ_BLOB_EXCEL')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "Linked Service for Azure Blob storage in Excel",
+                "annotations": [],
+                "type": "AzureBlobStorage",
+                "typeProperties": {
+                    "connectionString": "[parameters('LS_FOR_AZ_BLOB_EXCEL_connectionString')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/onprem-sqlserver-IR')]",
+            "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "type": "SelfHosted",
+                "description": "IR for On prem SQL Server 2022 to Azure Blob",
+                "typeProperties": {}
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/SQL_To_Parq')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_FOR_AZ_BLOB",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Parquet",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "container": "output"
+                    },
+                    "compressionCodec": "snappy"
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_FOR_AZ_BLOB')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/onprem_to_azure_excel_test')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_FOR_AZ_BLOB_EXCEL",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "container": "output"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_FOR_AZ_BLOB_EXCEL')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/LS_ONPREM_SQL_TO_BLOB_PARQ')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "Linked Service for On Prem SQL Table to Azure Blob",
+                "annotations": [],
+                "type": "SqlServer",
+                "typeProperties": {
+                    "server": "[parameters('LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_server')]",
+                    "database": "[parameters('LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_database')]",
+                    "encrypt": "mandatory",
+                    "trustServerCertificate": true,
+                    "authenticationType": "SQL",
+                    "userName": "[parameters('LS_ONPREM_SQL_TO_BLOB_PARQ_properties_typeProperties_userName')]",
+                    "password": {
+                        "type": "SecureString",
+                        "value": "[parameters('LS_ONPREM_SQL_TO_BLOB_PARQ_password')]"
+                    }
+                },
+                "connectVia": {
+                    "referenceName": "onprem-sqlserver-IR",
+                    "type": "IntegrationRuntimeReference"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/integrationRuntimes/onprem-sqlserver-IR')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/SqlServerTable1')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "LS_ONPREM_SQL_TO_BLOB_PARQ",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "SqlServerTable",
+                "schema": [
+                    {
+                        "name": "CustomerID",
+                        "type": "int",
+                        "precision": 10
+                    },
+                    {
+                        "name": "NameStyle",
+                        "type": "bit"
+                    },
+                    {
+                        "name": "Title",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "FirstName",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "MiddleName",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "LastName",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "Suffix",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "CompanyName",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "SalesPerson",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "EmailAddress",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "Phone",
+                        "type": "nvarchar"
+                    },
+                    {
+                        "name": "PasswordHash",
+                        "type": "varchar"
+                    },
+                    {
+                        "name": "PasswordSalt",
+                        "type": "varchar"
+                    },
+                    {
+                        "name": "rowguid",
+                        "type": "uniqueidentifier"
+                    },
+                    {
+                        "name": "ModifiedDate",
+                        "type": "datetime",
+                        "precision": 23,
+                        "scale": 3
+                    }
+                ],
+                "typeProperties": {
+                    "schema": "SalesLT",
+                    "table": "Customer"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/LS_ONPREM_SQL_TO_BLOB_PARQ')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/COPY-ONPREM-TABLE-BLOB-PARQUET')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "Pipeline to copy on prem table to Azure blob storage in Parquet format",
+                "activities": [
+                    {
+                        "name": "COPY-ONPREM-TABLE-TO-BLOB-PARQUET",
+                        "description": "Copying the on prem SQL table to Azure BLOB storage in Parquet",
+                        "type": "Copy",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "SqlServerSource",
+                                "queryTimeout": "00:15:00",
+                                "partitionOption": "None"
+                            },
+                            "sink": {
+                                "type": "DelimitedTextSink",
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageWriteSettings"
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextWriteSettings",
+                                    "quoteAllText": true,
+                                    "fileExtension": ".txt"
+                                }
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "typeConversion": true,
+                                "typeConversionSettings": {
+                                    "allowDataTruncation": true,
+                                    "treatBooleanAsNumber": false
+                                }
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "SqlServerTable1",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "onprem_to_azure_excel_test",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "annotations": [],
+                "lastPublishTime": "2026-04-23T02:25:50Z"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/SqlServerTable1')]",
+                "[concat(variables('factoryId'), '/datasets/onprem_to_azure_excel_test')]"
+            ]
+        }
+    ]
+}
