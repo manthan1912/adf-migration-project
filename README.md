@@ -103,3 +103,20 @@ Before deploying or running this project, make sure you have:
 3. The copy activity transfers the data to Azure Blob Storage.
 4. The output is stored as a **delimited text file** in the configured blob container.
 
+## Project Screenshots
+
+### Pipeline Overview
+<img width="1200" height="800" alt="chrome_qKHY5PcQDB" src="https://github.com/user-attachments/assets/764b0244-025f-4359-95ef-16a70928d168" />
+
+### Copy Activity Configuration
+<img width="1200" height="800" alt="chrome_3afApnxyJX" src="https://github.com/user-attachments/assets/45f4967c-0759-4ada-81f8-35f410235c29" />
+<br><br>
+<img width="1200" height="800" alt="chrome_VFpQkfuids" src="https://github.com/user-attachments/assets/796419cb-ae2c-45f6-8bc0-aa7712a361da" />
+
+### Successful Pipeline Run
+<img width="1200" height="800" alt="chrome_Edg3JCWvB7" src="https://github.com/user-attachments/assets/be0ce50a-c0ee-4b49-835d-a18d6b4c6071" />
+
+### Output File in Azure Blob Storage
+<img width="1200" height="800" alt="chrome_IQaRGDoZLq" src="https://github.com/user-attachments/assets/002fc4cc-d086-4013-842b-1973cf4a5f50" />
+<br><br>
+<img width="1200" height="800" alt="chrome_gTEq35MmAU" src="https://github.com/user-attachments/assets/afa86058-6374-4a2a-b71b-ca988ef911c6" />
